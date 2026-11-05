@@ -50,6 +50,23 @@ class Translate(unittest.TestCase):
         self.assertIsNone(to_english.translate("你好", lambda system, user: "  "))
         self.assertIsNone(to_english.translate("你好吗", lambda system, user: "你可以试试降低学习率。"))
 
+    def test_a_name_kept_in_its_own_script_is_still_english(self):
+        # a short greeting with a kept name used to fail a 30%-of-all-characters check
+        self.assertEqual(to_english.translate("你好克劳德", lambda system, user: "Hello克劳德"), "Hello克劳德")
+        self.assertEqual(to_english.translate("你好，克劳德", lambda system, user: "Hello, 克劳德!"), "Hello, 克劳德!")
+
+    def test_an_answer_mostly_in_another_script_is_a_failure(self):
+        self.assertIsNone(to_english.translate("试试", lambda system, user: "你可以 try 一下"))
+        self.assertIsNone(to_english.translate("你好", lambda system, user: "你好 hi"))
+
+    def test_quotes_dashes_and_emoji_do_not_count_as_foreign(self):
+        self.assertEqual(to_english.translate("好的", lambda system, user: "“OK” — 👍👍👍"), "“OK” — 👍👍👍")
+
+    def test_names_are_asked_for_in_their_english_form(self):
+        seen = []
+        to_english.translate("你好克劳德", lambda system, user: seen.append(system) or "Hello Claude")
+        self.assertIn("usual English form", seen[0])
+
     def test_accented_english_is_fine(self):
         self.assertEqual(to_english.translate("¿Qué tal?", lambda system, user: "How is the café?"), "How is the café?")
 

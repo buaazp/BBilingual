@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.11 - 2026-11-05
+
+- Input translation now also works for prompts from `claude -p`, the Agent SDK (e.g. a chat bot relaying
+  messages to Claude Code) and Remote Control. It used to translate only what was typed at the terminal. In
+  `confirm` mode an Agent SDK prompt is sent without asking, since no one is there to answer.
+- Short messages are no longer sent untranslated when the model keeps a name as written: "你好克劳德" came back as
+  "Hello克劳德", which failed the check that the answer is English (more than 30% of all characters not Latin), so
+  the Chinese was sent instead. The check now compares letters only: the answer fails when it has at least as
+  many letters in another script as Latin ones. The model is also asked to write names in their English form.
+
 ## 0.3.10 - 2026-10-09
 
 - Removed the "Waiting to be sent, as English" line above the prompt. A message typed while Claude is working is
