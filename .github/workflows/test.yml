@@ -1,29 +1,15 @@
 name: tests
 
-# Not run on every push, to save Actions minutes.
-# Runs on: pull requests to main, version tags, or manual trigger
-# (Actions tab -> tests -> Run workflow).
 on:
-  pull_request:
-    branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - "assets/**"
-      - "LICENSE"
   push:
-    tags: ["v*"]
-  workflow_dispatch:
-
-# A new commit on the same PR cancels the run still in progress.
-concurrency:
-  group: tests-${{ github.ref }}
-  cancel-in-progress: true
+  pull_request:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest is 26.04, which has no Python 3.9 build (README promises 3.9+).
+    runs-on: ubuntu-24.04
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
     steps:
