@@ -42,7 +42,11 @@ def env(name, default=""):
 
 
 TARGET = env("BBILINGUAL_TARGET", "zh-CN")
-BACKEND_TIMEOUT = 25   # seconds; the hook's own timeout is 60 (hooks/hooks.json)
+# Seconds per backend request. A thinking model (or a long reply) easily needed more than the old 25s, and the
+# hook then showed the reply untranslated. A batch can make two requests (one retry), so the hook's own timeout
+# in hooks/hooks.json (150) leaves room for both; to_english.py makes one per foreign run, in parallel, and
+# hooks/input.js waits 70s for it.
+BACKEND_TIMEOUT = 60
 FENCE_WAIT = 20        # seconds a batch waits for the previous batch's code-fence state
 CTX_WAIT = 4           # seconds it waits for the previous batch's translations (context only)
 CONTEXT_LINES = 6      # earlier (English, translation) pairs sent along for consistent terminology

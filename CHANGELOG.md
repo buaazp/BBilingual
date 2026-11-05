@@ -9,6 +9,9 @@
   "Hello克劳德", which failed the check that the answer is English (more than 30% of all characters not Latin), so
   the Chinese was sent instead. The check now compares letters only: the answer fails when it has at least as
   many letters in another script as Latin ones. The model is also asked to write names in their English form.
+- A translation request now has 60 seconds instead of 25, so a long reply or a thinking model no longer
+  times out and shows the reply untranslated. The hook's own limit goes from 60 to 150 seconds to fit a retry, and
+  input translation waits 70 seconds instead of 40.
 
 ## 0.3.10 - 2026-10-09
 

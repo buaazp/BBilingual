@@ -88,7 +88,7 @@ export function register(on) {
     try {
       const out = await $.process.run(['python3', $.plugin.root + '/scripts/to_english.py'], {
         stdin: text,
-        timeoutMs: 40000,
+        timeoutMs: 70000,
       })
       if (out.exitCode === 0) english = out.stdout.trim()
     } catch (err) {
