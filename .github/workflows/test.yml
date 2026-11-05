@@ -1,8 +1,24 @@
 name: tests
 
+# Not run on every push, to save Actions minutes.
+# Runs on: pull requests to main, version tags, or manual trigger
+# (Actions tab -> tests -> Run workflow).
 on:
-  push:
   pull_request:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - "assets/**"
+      - "LICENSE"
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+# A new commit on the same PR cancels the run still in progress.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
