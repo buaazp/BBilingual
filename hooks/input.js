@@ -20,6 +20,13 @@
 const NOT_ENGLISH = /[\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u024f\u0400-\u04ff\u0590-\u06ff\u0900-\u0dff\u0e00-\u0e7f\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/
 const MAX_CHARS = 4000
 const MODES = ['on', 'confirm', 'off']
+// Where a person's own message can come from: typed at the terminal (composer), sent through Remote Control
+// from a phone or the web (bridge), or handed to `claude -p` / the Agent SDK by a host program such as a chat
+// bot that relays what someone wrote (sdk). Notifications, schedules, peer sessions and other plugins' prompts
+// are not someone writing in their own language, so they are left alone.
+const TRANSLATED_ORIGINS = ['composer', 'bridge', 'sdk']
+// An sdk host has no one at a terminal to answer "Send this to Claude?", so confirm sends straight away there.
+const CAN_ASK = ['composer', 'bridge']
 const DEFAULT = 'off'
 
 async function currentMode($) {
@@ -68,10 +75,13 @@ export function register(on) {
   })
 
   on('prompt.submit', async ($, e, next) => {
-    const mode = await currentMode($)
     const text = e.text
-    // only what the person typed (a test fires the event without an origin)
-    if (mode === 'off' || (e.origin && e.origin.kind !== 'composer')) return next(e)
+    // only what a person wrote (a test fires the event without an origin)
+    const kind = e.origin ? e.origin.kind : 'composer'
+    if (!TRANSLATED_ORIGINS.includes(kind)) return next(e)
+    let mode = await currentMode($)
+    if (mode === 'off') return next(e)
+    if (mode === 'confirm' && !CAN_ASK.includes(kind)) mode = 'on'
     if (!NOT_ENGLISH.test(text) || /^\s*[/!]/.test(text) || text.length > MAX_CHARS) return next(e)
 
     let english = ''

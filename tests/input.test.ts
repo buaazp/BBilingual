@@ -109,6 +109,38 @@ test('/bbinput confirm turns the question on, and on turns it off again', async 
   expect(seen.question).toBe('')
 })
 
+// ---- where the prompt came from ----
+
+test('a prompt from claude -p or the Agent SDK (e.g. a chat bot) is translated too', async ($, on) => {
+  stubs(on, { mode: 'on' })
+  expect((await $.prompt.submit({ text: CHINESE, origin: { kind: 'sdk' } })).text).toBe(ENGLISH)
+})
+
+test('a prompt sent through Remote Control is translated too', async ($, on) => {
+  stubs(on, { mode: 'on' })
+  expect((await $.prompt.submit({ text: CHINESE, origin: { kind: 'bridge' } })).text).toBe(ENGLISH)
+})
+
+test('confirm: an sdk prompt is sent as English without asking, since no one can answer', async ($, on) => {
+  const seen = stubs(on, { mode: 'confirm', answer: 'Cancel' })
+  expect((await $.prompt.submit({ text: CHINESE, origin: { kind: 'sdk' } })).text).toBe(ENGLISH)
+  expect(seen.question).toBe('')
+})
+
+test('confirm: an sdk prompt whose translation failed is sent as written', async ($, on) => {
+  const seen = stubs(on, { mode: 'confirm', exitCode: 1, stdout: '', answer: 'Cancel' })
+  expect((await $.prompt.submit({ text: CHINESE, origin: { kind: 'sdk' } })).text).toBe(CHINESE)
+  expect(seen.question).toBe('')
+})
+
+test('notifications, schedules and peer sessions are not translated', async ($, on) => {
+  const seen = stubs(on, { mode: 'on' })
+  for (const kind of ['task-notification', 'scheduled-trigger', 'peer']) {
+    expect((await $.prompt.submit({ text: CHINESE, origin: { kind } as any })).text).toBe(CHINESE)
+  }
+  expect(seen.ran).toBe(0)
+})
+
 // ---- /bbilingual: the display translation on or off ----
 
 function envSets(on: any) {
